@@ -1,0 +1,1 @@
+import{j as e}from"./index-e1864906.js";/* empty css                */const t=()=>e("div",{className:" fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none bg-neutral-800/50",children:e("div",{className:"dots"})});export{t as L};

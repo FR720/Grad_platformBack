@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/87231b18-bcdb-4fe3-833e-2c59733b9769/resourceGroups/appsvc_linux_centralus_premium/providers/Microsoft.Web/sites/gamelearning-server",
+    "appService.deploySubpath": "."
+}
