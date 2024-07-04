@@ -18,18 +18,18 @@ Joi.objectId = require("joi-objectid")(Joi);
 app.use(bodyParser.json());
 app.use(cors());
 
-// app.use(function (req, res, next) {
-//   res.header("Access-Control-Allow-Origin",  "http://localhost:4000");
-//   res.header("Access-Control-Allow-Credentials", true);
-//   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,PATCH");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-//   next();
-// })
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin",  "http://localhost:4000");
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,PATCH");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+})
 
-// app.use(express.static(path.join(__dirname, '/dist')));
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, '/dist', 'index.html'));
-// });
+app.use(express.static(path.join(__dirname, '/dist')));
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '/dist', 'index.html'));
+});
 
 app.use("/image", express.static(path.join("Image")));
 app.use("/StudentProfilePic", express.static(path.join("StudentProfilePic")));

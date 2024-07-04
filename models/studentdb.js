@@ -1,45 +1,54 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const StudentSchema = mongoose.Schema({
-  studentName: {
+const Student = new mongoose.Schema({
+  parentName: {
     type: String,
     required: true,
+    trim: true
   },
-  studentUserName: {
+  parentMail: {
     type: String,
     required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: /^\S+@\S+\.\S+$/ 
   },
-  studentPassword: {
+  parentPassword: {
     type: String,
     required: true,
+    minlength: 6,
+    trim: true
   },
-  studentAge: {
+  parentAge: {
     type: Number,
+    required: false,
     min: 1,
-    max: 99,
-    required: false,
-  }, studentPic: {
+    max: 99
+  },
+  parentPhoneNumber: {
     type: String,
-  
     required: false,
+    minlength: 11,
+    maxlength: 15,
+    trim: false
   },
-  studentGrade: {
-    type: Number,
-    required: true,
-  },
-  studentRank: {
-    type: Number,
-    min: 11,
-    required: false,
-  },
-  studentParent: {
+  profilePictureUrl: {
     type: String,
-    required: true,
+    required: false,
+    trim: true
   },
-  taskCounter: {
-      type: Number,
-      default: 0,
-    },
+  resetToken: {
+    type: String,
+    required: false,
+    trim: true,
+  },
+  resetTokenExpiration: {
+    type: Date,
+    required: false,
+  },
+}, {
+  timestamps: true 
 });
 
-module.exports = mongoose.model("students", StudentSchema);
+module.exports = mongoose.model('Teacher', TeacherSchema);
