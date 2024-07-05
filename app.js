@@ -7,11 +7,10 @@ const path = require("path");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const student = require("./routes/students");
-const parents = require("./routes/parents");
-const data = require("./routes/dataRouter");
-const Task = require("./routes/Task");
-const feedback = require("./routes/feedbackRouter");
+const student = require("./routes/student");
+const doctor = require("./routes/docotor");
+
+
 const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
 
@@ -31,15 +30,9 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '/dist', 'index.html'));
 });
 
-app.use("/image", express.static(path.join("Image")));
-app.use("/StudentProfilePic", express.static(path.join("StudentProfilePic")));
-app.use("/Profile", express.static(path.join("Profile")));
-app.use("/ParentProfilePic", express.static(path.join("ParentProfilePic")));
 app.use("/student", student);
-app.use("/parent", parents);
-app.use("/Task", Task);
-app.use("/data", data);
-app.use("/feedback", feedback);
+app.use("/doctor", doctor);
+
 
 mongoose
   .connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true })

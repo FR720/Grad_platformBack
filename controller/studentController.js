@@ -1,8 +1,9 @@
-const Student = require("../models/studentdb");
-const User = require("../models/parentdb");
+// const Student = require("../models/studentdb");
+const Student = require("../models/SubjectDB");
+const DPosts = require('../models/PostsDB');
+const Subject = require('../models/SubjectDB');
 const bcrypt = require("bcrypt");
 const multer = require("multer");
-
 const storage = multer.diskStorage({
   destination: function (req, file, call) {
     call(null, "./StudentProfilePic/");
@@ -24,110 +25,79 @@ const upload = multer({
   },
 });
 
-AddChild = function (req, res, next) {
-  User.findById(req.params.id)
-    .then((parent) => {
-      if (!parent) {
-        return res.status(404).json({
-          message: "Parent not found",
-        });
-      }
-
-      Student.findOne({ studentUserName: req.body.username })
-        .then((existingStudent) => {
-          if (existingStudent) {
-            return res.status(409).json({
-              student: {
-                status: "Username already exists",
-              },
-            });
-          }
-
-          bcrypt
-            .hash(req.body.password, 10)
-            .then((hash) => {
-              const student = new Student({
-                studentUserName: req.body.username,
-                studentName: req.body.name,
-                studentPassword: req.body.password,
-                studentGrade: req.body.grade,
-                studentAge: req.body.age,
-                studentParent: parent._id,
-                studentPic: "Profile/default.png",
-              });
-
-              student
-                .save()
-                .then((result) => {
-                  res.status(200).json({
-                    student: {
-                      status: "Child was added successfully",
-                      _id: result._id,
-                      studentName: result.studentName,
-                      studentUserName: result.studentUserName,
-                      studentPassword: result.studentPassword,
-                      studentGrade: result.studentGrade,
-                      taskCounter: result.taskCounter,
-                    },
-                  });
-                })
-                .catch((error) => {
-                  res.status(500).json({
-                    message: "Internal server error",
-                    error: error,
-                  });
-                });
-            })
-            .catch((error) => {
-              res.status(500).json({
-                message: "Internal server error",
-                error: error,
-              });
-            });
-        })
-        .catch((error) => {
-          res.status(500).json({
-            message: "Internal server error",
-            error: error,
-          });
-        });
-    })
-    .catch((error) => {
-      res.status(500).json({
-        message: "Internal server error",
-        error: error,
+const StudentSignup = async (req, res, next) => {
+  try {
+    // Check if student with the same email exists
+    const existingStudent = await Student.findOne({ studentMail: req.body.mail });
+    if (existingStudent) {
+      return res.status(409).json({
+        student: {
+          status: "mail already exists",
+        },
       });
+    }
+    // Hash the password
+    const hash = await bcrypt.hash(req.body.password, 10);
+    // Create new student instance
+    const newStudent = new Student({
+      studentMail: req.body.mail,
+      studentName: req.body.name,
+      studentPassword: hash, // Store hashed password, not plain text
+      studentAcadmicYear: req.body.acadmicyear,
+      studentAge: req.body.age,
+      studentPhoneNumber: req.body.phoneNumber,
     });
+
+    // Save the student record
+    await newStudent.save();
+
+    // Respond with success message
+    res.status(200).json({
+      student: {
+        status: "Account was created successfully",
+      },
+    });
+  } catch (error) {
+    // Handle errors
+    console.error("Error in StudentSignup:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message, // Send error message for debugging
+    });
+  }
 };
 
 const StudentSignIn = async (req, res, next) => {
+  const { mail, password } = req.body;
+
   try {
-    const student = await Student.findOne({
-      studentUserName: req.body.username,
-    }).select(
-      "_id studentName studentPassword studentAge studentPic studentGrade studentParent"
+    const student = await Student.findOne({ studentMail: mail }).select(
+      "_id studentName studentMail studentAge studentPhoneNumber studentAcadmicYear studentSubjects studentPassword"
     );
 
     if (!student) {
       return res.status(404).json({
         student: {
-          status: "Wrong username",
+          status: "Wrong mail",
         },
       });
     }
 
-    // Compare the plain text password with the stored password
-    if (req.body.password === student.studentPassword) {
+    // Compare the plain text password with the hashed password in the database
+    const passwordMatch = await bcrypt.compare(password, student.studentPassword);
+
+    if (passwordMatch) {
       return res.status(200).json({
         student: {
           status: "Correct password",
-          studentID: student._id,
-          ParentID: student.studentParent,
-          studentName: student.studentName,
-          studentUserName: student.studentUserName,
-          studentAge: student.studentAge,
-          studentPic: student.studentPic,
-          studentGrade: student.studentGrade,
+          ID: student._id,
+          name: student.studentName,
+          mail: student.studentMail,
+          age: student.studentAge,
+          phoneNumber: student.studentPhoneNumber,
+          acadmicYear: student.studentAcadmicYear,
+          submittedSubjects: student.studentSubjects,
+          isAdmin: false
         },
       });
     } else {
@@ -149,7 +119,7 @@ const StudentSignIn = async (req, res, next) => {
 const StudentUpdateInfo = async function (req, res, next) {
   try {
     const student = await Student.findById(req.params.id);
-    if (!student) return res.status(400).send("no student wit such id");
+    if (!student) return res.status(400).send("no student with this id");
 
     const updatedData = { ...req.body };
     await Student.findByIdAndUpdate(req.params.id, updatedData, {
@@ -256,11 +226,170 @@ const deleteAccount = function (req, res, next) {
     });
 };
 
+const getPostsBySubjects = async (req, res, next) => {
+  const { subjectNames } = req.body; // Assuming subjectNames is an array of subject names
+
+  try {
+    // Query database for posts with subjectNames in the array
+    const posts = await DPosts.find({ subjectName: { $in: subjectNames } });
+
+    res.status(200).json({ posts });
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const reactOnPost = async (req, res, next) => {
+  const { postId, userId, reaction } = req.body; // Assuming postId, userId, and reaction (like/dislike) are provided
+
+  try {
+    // Find the post by postId
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Check if the user has already reacted on this post
+    const existingReaction = post.reacts.find(react => react.userId.toString() === userId && react.reaction === reaction);
+
+    if (existingReaction) {
+      return res.status(400).json({ message: 'User has already reacted this way on the post' });
+    }
+
+    // Add the new reaction to the post
+    post.reacts.push({ userId, reaction });
+    await post.save();
+
+    res.status(200).json({ message: 'Reaction added successfully' });
+  } catch (error) {
+    console.error('Error reacting on post:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+const commentOnPost = async (req, res, next) => {
+  const { postId, userId, content } = req.body; // Assuming postId, userId, and content are provided
+
+  try {
+    // Find the post by postId
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Add the new comment to the post
+    const newComment = {
+      userId,
+      content,
+      reacts: [] // Initialize reacts array for the comment
+    };
+
+    post.comments.push(newComment);
+    await post.save();
+
+    res.status(200).json({ message: 'Comment added successfully', comment: newComment });
+  } catch (error) {
+    console.error('Error commenting on post:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+const reactOnComment = async (req, res, next) => {
+  const { postId, commentId, userId, reaction } = req.body; // Assuming postId, commentId, userId, and reaction (like/dislike) are provided
+
+  try {
+    // Find the post by postId
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Find the comment by commentId
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    // Check if the user has already reacted this way on the comment
+    const existingReaction = comment.reacts.find(react => react.userId.toString() === userId && react.reaction === reaction);
+
+    if (existingReaction) {
+      return res.status(400).json({ message: 'User has already reacted this way on the comment' });
+    }
+
+    // Add the new reaction to the comment
+    comment.reacts.push({ userId, reaction });
+    await post.save();
+
+    res.status(200).json({ message: 'Reaction added successfully' });
+  } catch (error) {
+    console.error('Error reacting on comment:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+const getAllSubjects = async (req, res, next) => {
+  try {
+    // Query database to find all subjects
+    const subjects = await Subject.find({});
+
+    res.status(200).json({ subjects });
+  } catch (error) {
+    console.error('Error fetching all subjects:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const registerSubjectByName = async (req, res, next) => {
+  const { subjectName } = req.body; // Assuming subjectName is provided
+
+  try {
+    // Check if the subject already exists
+    const existingSubject = await Subject.findOne({ subjectName });
+
+    if (existingSubject) {
+      return res.status(400).json({ message: 'Subject already registered' });
+    }
+
+    // Create a new subject instance
+    const newSubject = new Subject({ subjectName });
+
+    // Save the new subject to the database
+    await newSubject.save();
+
+    res.status(200).json({ message: 'Subject registered successfully', subject: newSubject });
+  } catch (error) {
+    console.error('Error registering subject:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+const getSubjectsByStudent = async (req, res, next) => {
+  const { studentMail } = req.body; // Assuming studentMail is provided
+
+  try {
+    // Query database to find subjects registered by the student
+    const subjects = await Subject.find({ studentMail });
+
+    res.status(200).json({ subjects });
+  } catch (error) {
+    console.error('Error fetching subjects by student:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 module.exports = {
-  StudentSignIn: StudentSignIn,
-  AddChild: AddChild,
-  StudentUpdateInfo: StudentUpdateInfo,
-  UpdatePassword: UpdatePassword,
-  deleteAccount: deleteAccount,
+   StudentSignIn,
+   StudentSignup,
+  StudentUpdateInfo,
+   UpdatePassword,
+   deleteAccount,
+  getPostsBySubjects,
+  reactOnPost,
+  commentOnPost,
+  reactOnComment,
+  getAllSubjects,
+  registerSubjectByName,
+  getSubjectsByStudent,
   upload: upload,
 };

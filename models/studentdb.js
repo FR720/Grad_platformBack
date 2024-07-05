@@ -34,9 +34,15 @@ const Student = new mongoose.Schema({
     trim: false
   },
   studentAcadmicYear: {
-    type: String,
+    type: Number,
+    required: true,
+    min: 1,
+    max: 4,
+  },
+  studentSubjects: {
+    type: Array,
+    ref: "Data", 
     required: false,
-    trim: false
   },
 
 }, {
