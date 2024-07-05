@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const Student = new mongoose.Schema({
-  parentName: {
+  studentName: {
     type: String,
     required: true,
     trim: true
   },
-  parentMail: {
+  studentMail: {
     type: String,
     required: true,
     unique: true,
@@ -14,41 +14,33 @@ const Student = new mongoose.Schema({
     lowercase: true,
     match: /^\S+@\S+\.\S+$/ 
   },
-  parentPassword: {
+  studentPassword: {
     type: String,
     required: true,
     minlength: 6,
     trim: true
   },
-  parentAge: {
+  studentAge: {
     type: Number,
     required: false,
-    min: 1,
+    min: 18,
     max: 99
   },
-  parentPhoneNumber: {
+  studentPhoneNumber: {
     type: String,
     required: false,
     minlength: 11,
     maxlength: 15,
     trim: false
   },
-  profilePictureUrl: {
+  studentAcadmicYear: {
     type: String,
     required: false,
-    trim: true
+    trim: false
   },
-  resetToken: {
-    type: String,
-    required: false,
-    trim: true,
-  },
-  resetTokenExpiration: {
-    type: Date,
-    required: false,
-  },
+
 }, {
   timestamps: true 
 });
 
-module.exports = mongoose.model('Teacher', TeacherSchema);
+module.exports = mongoose.model('Student', StudentSchema);
