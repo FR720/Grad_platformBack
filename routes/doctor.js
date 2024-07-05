@@ -7,12 +7,13 @@ const controller = require("../controller/doctorController");
 
 
 
-router.post("/signin", controller.DoctorSignIn);
+router.post("/signin", controller.DoctorSignIn);//tested OK
+router.post("/signup", controller.DoctorSignup);//tested OK
 router.post("/createPost", controller.createPost);
 router.get("/posts", controller.getPostsByDoctorEmail);
-router.post("/addsubject", controller.createSubject);
-router.get("/posts", controller.getPostsByDoctorEmail);
-router.get("/subject", controller.getSubjectsByDoctorEmail);
-router.post("/upload", controller.uploadMaterial);
+router.post("/addsubject", controller.createSubject);//tested OK
+router.get("/subject/:doctorMail", controller.getSubjectsByDoctorEmail);//tested OK
+router.post('/upload-material/:subjectName', controller.upload.single('pdfFile'), controller.uploadMaterial);//tested OK
+router.get("/allmatrial/:doctorMail", controller.getmatrialByDoctorMailFromMatrial);//tested OK
 
 module.exports = router;

@@ -1,12 +1,11 @@
 const express = require('express');
-const { execMap } = require('nodemon/lib/config/defaults');
 const router = express.Router();
 
 const control = require('../controller/studentController');
 
 
-router.post('/signup', control.StudentSignup );
-router.post('/signIn', control.StudentSignIn);
+router.post('/signup', control.StudentSignup );//tested OK
+router.post('/signIn', control.StudentSignIn);//tested OK
 router.post('/react', control.reactOnPost );
 router.post('/comment', control.commentOnPost );
 router.post('/reactoncomment', control.reactOnComment);

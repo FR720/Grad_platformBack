@@ -1,29 +1,57 @@
 const Student = require("../models/SubjectDB");
 const Posts = require('../models/PostsDB');
 const Subject = require('../models/SubjectDB');
-const Docotr = require('../models/DoctorDB');
+const Doctor = require('../models/DoctorDB');
+const Matrial = require('../models/MatrialDB')
 
 const bcrypt = require("bcrypt");
-const multer = require("multer");
+const multer = require('multer');
+const path = require('path');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./ParentProfilePic/");
+    cb(null, 'uploads/'); 
   },
   filename: function (req, file, cb) {
-    cb(null, `${file.originalname}_${new Date().getTime()}.png`);
-  },
+    cb(null, Date.now() + '-' + file.originalname);
+  }
 });
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1024 * 1024 * 8,
-  },
-});
+// Initialize multer with storage options
+const upload = multer({ storage: storage });
 
-
-
+const DoctorSignup = async (req, res, next) => {
+    const { mail, name, password } = req.body;
+  
+    try {
+      const existingDoctor = await Doctor.findOne({ doctorMail: mail });
+      if (existingDoctor) {
+        return res.status(409).json({
+          doctor: {
+            status: 'Mail already exists',
+          },
+        });
+      }
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newDoctor = new Doctor({
+        doctorMail: mail,
+        doctorName: name,
+        doctorPassword: hashedPassword,
+      });
+      await newDoctor.save();
+      res.status(200).json({
+        doctor: {
+          status: 'Account was created successfully',
+        },
+      });
+    } catch (error) {
+      console.error('Error in DoctorSignup:', error);
+      res.status(500).json({
+        message: 'Internal server error',
+        error: error.message,
+      });
+    }
+  };
 const DoctorSignIn = async (req, res, next) => {
   const { mail, password } = req.body;
 
@@ -172,10 +200,9 @@ const getPostsByDoctorEmail = async (req, res, next) => {
 };
 
 const createSubject = async (req, res, next) => {
-  const { doctorMail, academicYear, subjectName, materialPath } = req.body;
+  const { doctorMail, academicYear, subjectName, MatrialID } = req.body;
 
   try {
-    // Check if the doctor exists
     const doctor = await Doctor.findOne({ doctorMail });
 
     if (!doctor) {
@@ -183,18 +210,13 @@ const createSubject = async (req, res, next) => {
         message: 'Doctor not found',
       });
     }
-
-    // Create a new subject
     const newSubject = new Subject({
       doctorMail,
       academicYear,
       subjectName,
-      materialPath, // Assuming materialPath is where the PDF file will be stored
-      // other fields as needed
+      MatrialID, 
     });
-
     const savedSubject = await newSubject.save();
-
     res.status(201).json({
       message: 'Subject created successfully',
       subject: savedSubject,
@@ -202,44 +224,42 @@ const createSubject = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
+        
       message: 'Internal server error',
-      error: error.message,
+      error: error.message==="E11000 duplicate key error collection: test.subjects index: subjectName_1 dup key: { subjectName: \"math\" }"?"subjectname is alerady exist":error.message,
     });
   }
 };
 
 const getSubjectsByDoctorEmail = async (req, res, next) => {
-  const { doctorMail } = req.params; // Assuming the doctor's email is passed as a parameter
-
-  try {
-    // Check if the doctor exists
-    const doctor = await Doctor.findOne({ doctorMail });
-
-    if (!doctor) {
-      return res.status(404).json({
-        message: 'Doctor not found',
+    const { doctorMail } = req.params; 
+  
+    try {
+      const doctor = await Doctor.findOne({ doctorMail });
+  
+      if (!doctor) {
+        return res.status(404).json({
+          message: 'Doctor not found',
+        });
+      }
+      const subjects = await Subject.find({ doctorMail });
+  
+      res.status(200).json({
+        doctor: {
+          _id: doctor._id,
+          name: doctor.doctorName,
+          email: doctor.doctorMail,
+        },
+        subjects,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        message: 'Internal server error',
+        error: error.message,
       });
     }
-
-    // Retrieve subjects by doctor's email
-    const subjects = await Subject.find({ doctorMail });
-
-    res.status(200).json({
-      doctor: {
-        _id: doctor._id,
-        name: doctor.doctorName,
-        email: doctor.doctorMail,
-      },
-      subjects,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: 'Internal server error',
-      error: error.message,
-    });
-  }
-};
+  };
 
 const deleteDoctorAccount = async (req, res, next) => {
   try {
@@ -265,46 +285,100 @@ const deleteDoctorAccount = async (req, res, next) => {
     });
   }
 };
+
 const uploadMaterial = async (req, res, next) => {
-  const { subjectId } = req.params; // Assuming the subject ID is passed as a parameter
-  const { file } = req; // Assuming the file (PDF) is uploaded via multipart/form-data
+    const { subjectName } = req.params;
+    const {doctorMail } = req.body;
+    const { file } = req;
 
-  try {
-    // Check if the subject exists
-    const subject = await Subject.findById(subjectId);
+    try {
+        // Check if the subject exists by subjectName, not _id
+        const subject = await Subject.findOne({ subjectName });
 
-    if (!subject) {
-      return res.status(404).json({
-        message: 'Subject not found',
-      });
+        if (!subject) {
+            return res.status(404).json({
+                message: 'Subject not found',
+            });
+        }
+    const existingDoctor = await Doctor.findOne({ doctorMail })
+    console.log("🚀 ~ uploadMaterial ~ existingDoctor:", existingDoctor)
+    
+      if (!existingDoctor) {
+        return res.status(404).json({
+          doctor: {
+            status: 'Doctor Not Found',
+          },
+        });
+      }
+        // Create a new material record
+        console.log(file.path)
+        console.log(subjectName)
+        const matrial = new Matrial({
+            subjectNameM: subjectName,
+            matrialPath: file.path,
+            doctorMailM:doctorMail
+        });
+        console.log("ggggg",matrial)
+        // Save the material record
+        await matrial.save();
+
+        res.status(200).json({
+            message: 'Material (PDF) uploaded successfully',
+            matrial,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: 'Internal server error',
+            error: error.message,
+        });
     }
-
-    // Handle file upload (save file path or buffer to storage location)
-    // Example: Save file path to materialPath field in Subject model
-    subject.materialPath = file.path; // Update materialPath with uploaded file path
-    await subject.save();
-
-    res.status(200).json({
-      message: 'Material (PDF) uploaded successfully',
-      subject,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: 'Internal server error',
-      error: error.message,
-    });
-  }
 };
 
+const getmatrialByDoctorMailFromMatrial = async (req, res, next) => {
+    const { doctorMail } = req.params;
+
+    try {
+        // Find all materials with the given doctorMail
+        const materials = await Matrial.find({ doctorMailM:doctorMail });
+        console.log("🚀 ~ getmatrialByDoctorMailFromMatrial ~ materials:", materials)
+
+        // Check if any materials were found
+        if (!materials || materials.length === 0) {
+            return res.status(404).json({ message: "No materials found for this doctor" });
+        }
+
+        // Prepare subject information based on the found materials
+        const subjectInfo = materials.map(material => ({
+            subjectName: material.subjectNameM,
+            matrialPath: material.matrialPath,
+        }));
+
+        // Respond with the doctorMail and subject information
+        res.status(200).json({
+            doctorMail: doctorMail,
+            subjects: subjectInfo,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
+    
 module.exports = {
+    DoctorSignup,
   DoctorSignIn,
-  updateDoctorInfo,
-  deleteDoctorAccount,
+  // updateDoctorInfo,
+  // deleteDoctorAccount,
   createPost,
   getPostsByDoctorEmail,
   createSubject,
   getSubjectsByDoctorEmail,
   uploadMaterial,
+  getmatrialByDoctorMailFromMatrial,
   upload,
 };

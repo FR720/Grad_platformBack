@@ -5,19 +5,11 @@ const SubjectSchema = new mongoose.Schema(
 
     doctorMail: {
       type: String,
-      required: false,
-      trim: true,
+      required: true,
       lowercase: true,
       match: /^\S+@\S+\.\S+$/ 
     },
-    studentMail: {
-      type: String,
-      required: false,
-      trim: true,
-      lowercase: true,
-      match: /^\S+@\S+\.\S+$/ 
-    },
-    AcadmicYear: {
+    academicYear: {
       type: Number,
       required: true,
       min: 1,
@@ -27,13 +19,8 @@ const SubjectSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique:true,
-      trim: true,
     },
-    MatrialPath: {
-      type: String,
-      required: false,
-      trim: true,
-    },
+   
   },
   {
     timestamps: true, 

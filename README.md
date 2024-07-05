@@ -1,89 +1,51 @@
 
-## to create account for parent on website
+## to create account for Student 
 
 ```
-[machine host]/parent/create
+http://localhost:8080/student/signup
 
- request body should be like
- ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-
-var raw = JSON.stringify({
-  "name": "fady",
-  "mail": "fadyraouf231@gmail.com",
-  "password": "123",
-  "age": "22",
-  "phone": "01030298360"
-});
-
-type : post
-
-response body should be like
- ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-if(ok)
-here you will resevie status: 200
 {
-    "parent": {
-        "status": "account successfully created",
-        "_id": "6438060776b3f3a3fd00461d",
-        "parentName": "fady",
-        "parentMail": "fadyraouf231@gmail.com",
-        "parentPhoneNumber": "01030298360",
-        "parentAge": 22
-    }
+  "mail": "existingstudent@example.com",
+  "name": "Jane Smith",
+  "password": "password456",
+  "acadmicyear": 2,
+  "age": 21,
+  "phoneNumber": "9876543210"
 }
 
-if(exist mail )
-here you will resevie status: 409
-{
-    "parent": {
-        "status": "this mail is already registered"
-    }
-}
 ```
 
-## to log in through website
+## to log in for student
 
 ```
-[machine host]/parent/login
+http://localhost:8080/student/signin
 
 request body should be like
- ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-
-var raw = JSON.stringify({
-  "mail": "fadyraouf231@gmail.com",
-  "password": "123"
-});
+{
+  "mail": "existingstudent@example.com",
+  "name": "Jane Smith",
+  "password": "password456",
+  "acadmicyear": 2,
+  "age": 21,
+  "phoneNumber": "0109876543210"
+}
 
 type : post
 
 response body should be like
- ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-if(ok)
-here you will resevie status: 200
 {
-    "parent": {
-        "status": "correct password",
-        "_id": "6438060776b3f3a3fd00461d",
-        "parentName": "fady",
-        "parentMail": "fadyraouf231@gmail.com",
-        "parentPhoneNumber": "01030298360",
-        "parentAge": 22,
-        "parentProfilePic": "Profile/default.png"
-    },
-    "children": [
-        {
-            "studentID": "643809661762b3f8644329fb",
-            "studentName": "fady",
-            "studentUserName": "fady",
-            "studentAge": 9,
-            "studentPic": "Profile/default.png",
-            "studentGrade": 1,
-             " taskCounter": 3,:
-        }
-    ]
+    "student": {
+        "status": "Correct password",
+        "ID": "668820229926c1352eddaec7",
+        "name": "Jane Smith",
+        "mail": "existingstudent@example.com",
+        "age": 21,
+        "phoneNumber": "0109876543210",
+        "acadmicYear": 2,
+        "submittedSubjects": [],
+        "isAdmin": false
+    }
 }
-
-
 if(wrong mail  )
 here you will resevie status: 404
 {
@@ -100,166 +62,77 @@ here you will resevie status: 200
 }
 ```
 
-## to add student it should be from website after chosing add child
+## to log in for doctor 
 
 ```
-[machine host]/student/AddChild/id
-id:it refer to parent id it should be embedded to api url
+http://localhost:8080/doctor/signin
+
 
  request body should be like
- ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+{
+  "mail": "doctor@example.com",
+  "name": "Dr. John Doe",
+  "password": "password123"
+}
 
-var raw = JSON.stringify({
-  "username": "fadiy",
-  "password": "123",
-  "name": "fady",
-  "grade": "4"
-});
 
 type : post
 
-response body should be like
- ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-if(ok)
-here you will resevie status: 200
-{
-    "student": {
-        "status": "Child was added successfully",
-        "_id": "643810158c7ba4f1fb42411d",
-        "studentName": "fady",
-        "studentUserName": "fady",
-        "studentPassword": "fady",
-        "studentGrade": 9,
-    }
-}
-
-if(exist username )
-here you will resevie status: 409
-{
-    "student": {
-        "status": "Username already exists"
-    }
-}
-if(wrong user  )
-here you will resevie status: 404
-{
-    "parent": {
-        "status": "wrong mail"
-    }
-}
-if(wrong id  )
-here you will resevie status: 500
 
 ```
 
-## for parent to add data from website that will appear to student in mobile
+## for doctor to create subject 
 
 ```
-[machine host]/FSE/InsertData/id
-id:it refer to parent id it should be embedded to api url
-
+http://localhost:8080/doctor/addsubject
  request body should be like
- ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-
-ar formdata = new FormData();
-formdata.append("grade", "1");  mandtory
-formdata.append("subject", "en"); mandtory
-formdata.append("wordar", "كلب"); not  mandtory
-formdata.append("worden", "dog"); not mandtory
-formdata.append("image", fileInput.files[0], "/C:/Users/f0/Pictures/Screenshots/Screenshot (45).png"); not mandtory
-formdata.append("sentence", "yesterday i saw dog "); not mandtory
-formdata.append("number", "1"); not mandtory
-formdata.append("choices", ["1",...]); not mandtory
+{
+  "doctorMail": "doctor@example.com",
+ "academicYear":1,
+  "subjectName":"matsh"
+}
 type : post
+```
+
+## for docotor to get his all subjects 
+
+```
+http://localhost:8080/doctor/subject/doctor@example.com
+you can replace doctor@example.com by any anothe mail
+
+ 
+type : get
 
 if(ok)
 here you will resevie status: 200
 {
-    "status": "inserting question succssufully"
-}
-```
-
-## for parent to show data that previosuly insert
-
-```
-[machine host]/FSE/TakeData/id
-id:it refer to parent id it should be embedded to api url
-
- request body should be like
- ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-
-var raw = JSON.stringify({
-  "grade": 1,
-  "subject": "en"
-});
-type : post
-
-if(ok)
-here you will resevie status: 200
-{
-    "data": [
+    "doctor": {
+        "_id": "668824cddf212155aebff4df",
+        "name": "Dr. Fady Raouf",
+        "email": "doctor@example.com"
+    },
+    "subjects": [
         {
-            "dataId": "64381560eacc7abc90deece8",
-            "parentId": "6436d8f044bd5589e237d3b5",
-            "gradeNo": 1,
-            "subjectName": "en",
-            "imageUrl": "FSEimage\\dog_1681397088405.png",
-            "definitionInAc": "كلب",
-            "definitionInEn": "dog",
-            "sentence": "yesterday i saw dog",
-            "numbers": "1",
-            "choices":["1",...],
-            "createdAt": "2023-04-13T14:44:48.421Z",
-            "updatedAt": "2023-04-13T14:44:48.421Z"
+            "_id": "668828d5eeb9a0adee6d33ba",
+            "doctorMail": "doctor@example.com",
+            "academicYear": 1,
+            "subjectName": "math",
+            "createdAt": "2024-07-05T17:09:41.440Z",
+            "updatedAt": "2024-07-05T17:09:41.440Z",
+            "__v": 0
         },
         {
-            "dataId": "643818e5cb5f3327b9284837",
-            "parentId": "6436d8f044bd5589e237d3b5",
-            "gradeNo": 1,
-            "subjectName": "en",
-            "imageUrl": "FSEimage\\dog_1681397989670.png",
-            "definitionInAc": "كلب1",
-            "definitionInEn": "dog",
-            "sentence": "yesterday i saw dog",
-            "numbers": "1",
-            "choices":["1",...],
-            "createdAt": "2023-04-13T14:59:49.688Z",
-            "updatedAt": "2023-04-13T14:59:49.688Z"
-        },
-        {
-            "dataId": "643818e9cb5f3327b9284839",
-            "parentId": "6436d8f044bd5589e237d3b5",
-            "gradeNo": 1,
-            "subjectName": "en",
-            "imageUrl": "FSEimage\\dog_1681397993974.png",
-            "definitionInAc": "كلب2",
-            "definitionInEn": "dog",
-            "sentence": "yesterday i saw dog",
-            "numbers": "1",
-            "choices":["1",...],
-            "createdAt": "2023-04-13T14:59:53.980Z",
-            "updatedAt": "2023-04-13T14:59:53.980Z"
-        },
-        {
-            "dataId": "643818efcb5f3327b928483b",
-            "parentId": "6436d8f044bd5589e237d3b5",
-            "gradeNo": 1,
-            "subjectName": "en",
-            "imageUrl": "FSEimage\\dog_1681397999819.png",
-            "definitionInAc": "كلب2",
-            "definitionInEn": "dog",
-            "sentence": "yesterday i saw dog",
-            "numbers": "1",
-            "choices":["1",...],
-            "createdAt": "2023-04-13T14:59:59.827Z",
-            "updatedAt": "2023-04-13T14:59:59.827Z"
+            "_id": "668829aed016fa7a1c95c6ca",
+            "doctorMail": "doctor@example.com",
+            "academicYear": 1,
+            "subjectName": "matsh",
+            "createdAt": "2024-07-05T17:13:18.946Z",
+            "updatedAt": "2024-07-05T17:13:18.946Z",
+            "__v": 0
         }
     ]
 }
-if(error in grade or subject)
-{
-    "status": "No matching documents found"
-}
+
 ```
 
 ## for parent to assign task from that previosuly inserted data

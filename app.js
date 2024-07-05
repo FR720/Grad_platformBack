@@ -8,7 +8,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const student = require("./routes/student");
-const doctor = require("./routes/docotor");
+const doctor = require("./routes/doctor");
 
 
 const Joi = require("joi");
@@ -25,10 +25,7 @@ app.use(function (req, res, next) {
   next();
 })
 
-app.use(express.static(path.join(__dirname, '/dist')));
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '/dist', 'index.html'));
-});
+app.use(express.static(path.join(__dirname, 'uploads')));
 
 app.use("/student", student);
 app.use("/doctor", doctor);
