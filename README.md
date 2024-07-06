@@ -170,30 +170,127 @@ http://localhost:8080/doctor/allmatrial/doctor@example.com
             "subjectName": "math",
             "matrialPath": "uploads\\1720206080950-fady_raouf_v.pdf"
         },
+    ]
+}
+```
+## for docotor to create post
+```
+http://localhost:8080/doctor/createPost
+ 
+requst should be like this 
+        const formdata = new FormData();
+        formdata.append("postImage", fileInput.files[0], "/C:/Users/fadyr/OneDrive/Pictures/Screenshots/Screenshot (1).png");
+        formdata.append("doctorMail", "doctor@example.com");
+        formdata.append("subjectName", "math");
+        formdata.append("title", "hello mother hackerd");
+        formdata.append("content", "slamo3leekodsd");
+
+        const requestOptions = {
+          method: "POST",
+          body: formdata,
+          redirect: "follow"
+        };
+
+        fetch("http://localhost:8080/doctor/createPost", requestOptions)
+          .then((response) => response.text())
+          .then((result) => console.log(result))
+          .catch((error) => console.error(error));
+
+type :post 
+```
+## for docotor to get his  posts
+```
+http://localhost:8080/doctor/posts/doctor@example.com 
+    doctor@example.com THIS IS VARIABLE FROM DOCTOR TO ANOTHER 
+response should be like this  
+
+
+{
+    "doctor": {
+        "_id": "668824cddf212155aebff4df",
+        "name": "Dr. Fady Raouf",
+        "email": "doctor@example.com"
+    },
+    "posts": [
         {
+            "_id": "66890d8a3ef90f59988a278c",
+            "doctorMail": "doctor@example.com",
             "subjectName": "math",
-            "matrialPath": "uploads\\1720206350716-fady_raouf_v.pdf"
+            "title": "hello mother hacker",
+            "content": "slamo3leeko",
+            "image": "uploads\\1720257930015-Screenshot (1).png",
+            "reacts": [],
+            "comments": [],
+            "createdAt": "2024-07-06T09:25:30.105Z",
+            "updatedAt": "2024-07-06T09:25:30.105Z",
+            "__v": 0
         },
         {
+            "_id": "66890d8c3ef90f59988a278f",
+            "doctorMail": "doctor@example.com",
             "subjectName": "math",
-            "matrialPath": "uploads\\1720206574978-fady_raouf_v.pdf"
+            "title": "hello mother hacker",
+            "content": "slamo3leeko",
+            "image": "uploads\\1720257932149-Screenshot (1).png",
+            "reacts": [],
+            "comments": [],
+            "createdAt": "2024-07-06T09:25:32.237Z",
+            "updatedAt": "2024-07-06T09:25:32.237Z",
+            "__v": 0
         },
         {
+            "_id": "66890d8d3ef90f59988a2792",
+            "doctorMail": "doctor@example.com",
             "subjectName": "math",
-            "matrialPath": "uploads\\1720206622517-fady_raouf_v.pdf"
+            "title": "hello mother hacker",
+            "content": "slamo3leeko",
+            "image": "uploads\\1720257933533-Screenshot (1).png",
+            "reacts": [],
+            "comments": [],
+            "createdAt": "2024-07-06T09:25:33.625Z",
+            "updatedAt": "2024-07-06T09:25:33.625Z",
+            "__v": 0
         },
         {
+            "_id": "66890d8e3ef90f59988a2795",
+            "doctorMail": "doctor@example.com",
             "subjectName": "math",
-            "matrialPath": "uploads\\1720206626482-fady_raouf_v.pdf"
+            "title": "hello mother hacker",
+            "content": "slamo3leeko",
+            "image": "uploads\\1720257934486-Screenshot (1).png",
+            "reacts": [],
+            "comments": [],
+            "createdAt": "2024-07-06T09:25:34.577Z",
+            "updatedAt": "2024-07-06T09:25:34.577Z",
+            "__v": 0
         },
         {
+            "_id": "66890d943ef90f59988a2798",
+            "doctorMail": "doctor@example.com",
             "subjectName": "math",
-            "matrialPath": "uploads\\1720206638998-fady_raouf_v.pdf"
+            "title": "hello mother hackerd",
+            "content": "slamo3leeko",
+            "image": "uploads\\1720257940640-Screenshot (1).png",
+            "reacts": [],
+            "comments": [],
+            "createdAt": "2024-07-06T09:25:40.741Z",
+            "updatedAt": "2024-07-06T09:25:40.741Z",
+            "__v": 0
         },
         {
+            "_id": "66890d963ef90f59988a279b",
+            "doctorMail": "doctor@example.com",
             "subjectName": "math",
-            "matrialPath": "uploads\\1720206682925-fady_raouf_v.pdf"
+            "title": "hello mother hackerd",
+            "content": "slamo3leekodsd",
+            "image": "uploads\\1720257942898-Screenshot (1).png",
+            "reacts": [],
+            "comments": [],
+            "createdAt": "2024-07-06T09:25:42.986Z",
+            "updatedAt": "2024-07-06T09:25:42.986Z",
+            "__v": 0
         }
     ]
 }
+type :get  
 ```

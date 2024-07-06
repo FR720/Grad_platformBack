@@ -129,10 +129,10 @@ const updateDoctorInfo = async (req, res, next) => {
 };
 
 const createPost = async (req, res, next) => {
-  const { doctorMail, subjectName, title, content, image } = req.body;
+  const { doctorMail, subjectName, title, content } = req.body;
+  const { file } = req;
 
   try {
-    // Check if the doctor exists
     const doctor = await Doctor.findOne({ doctorMail });
 
     if (!doctor) {
@@ -141,14 +141,13 @@ const createPost = async (req, res, next) => {
       });
     }
 
-    // Create a new post
     const newPost = new Posts({
       doctorMail,
       subjectName,
       title,
       content,
-      image,
-      // other fields as needed
+      image:file.path,
+
     });
 
     const savedPost = await newPost.save();
@@ -167,7 +166,7 @@ const createPost = async (req, res, next) => {
 };
 
 const getPostsByDoctorEmail = async (req, res, next) => {
-  const { doctorMail } = req.params; // Assuming the doctor's email is passed as a parameter
+  const { doctorMail } = req.params; 
 
   try {
     // Check if the doctor exists
@@ -179,8 +178,8 @@ const getPostsByDoctorEmail = async (req, res, next) => {
       });
     }
 
-    // Retrieve posts by doctor's email
-    const posts = await Post.find({ doctorMail });
+
+    const posts = await Posts.find({ doctorMail });
 
     res.status(200).json({
       doctor: {

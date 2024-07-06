@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const PostsSchema = new mongoose.Schema(
   {
-    teacherMail: {
+    doctorMail: {
       type: String,
       required: true,
       trim: true,
@@ -12,8 +12,6 @@ const PostsSchema = new mongoose.Schema(
     subjectName: {
       type: String,
       required: true,
-      unique: true,
-      trim: true,
     },
     title: {
       type: String, 
