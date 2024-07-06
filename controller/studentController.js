@@ -1,6 +1,7 @@
 const Student = require("../models/studentdb");
 const DPosts = require('../models/PostsDB');
 const Subject = require('../models/SubjectDB');
+const Matrial = require('../models/MatrialDB')
 const bcrypt = require("bcrypt");
 
 const StudentSignup = async (req, res, next) => {
@@ -209,13 +210,16 @@ const StudentSignIn = async (req, res, next) => {
 //     });
 // };
 
-const getPostsBySubjects = async (req, res, next) => {
-  const { subjectNames } = req.body; // Assuming subjectNames is an array of subject names
+const getPostsBySubject = async (req, res, next) => {
+  const { subjectName } = req.params; 
 
   try {
-    // Query database for posts with subjectNames in the array
-    const posts = await DPosts.find({ subjectName: { $in: subjectNames } });
-
+   
+    const posts = await DPosts.find({ subjectName: { $in: subjectName } });
+    if(!posts[0])
+    {
+      return res.status(404).json({ message:"no posts for till yet " })
+    }
     res.status(200).json({ posts });
   } catch (error) {
     console.error("Error fetching posts:", error);
@@ -227,7 +231,7 @@ const getPostsBySubjects = async (req, res, next) => {
 const reactOnPost = async (req, res, next) => {
   const { postId, userId, reaction } = req.body; // Assuming postId, userId, and reaction (like/dislike) are provided
   try {
-    const post = await Post.findById(postId);
+    const post = await DPosts.findById(postId);
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -240,15 +244,15 @@ const reactOnPost = async (req, res, next) => {
     res.status(200).json({ message: 'Reaction added successfully' });
   } catch (error) {
     console.error('Error reacting on post:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ error,message: 'Internal server error' });
   }
 };
 
 
 const commentOnPost = async (req, res, next) => {
-  const { postId, userId, content } = req.body; // Assuming postId, userId, and content are provided
+  const { postId, userId, content } = req.body; 
   try {
-    const post = await Post.findById(postId);
+    const post = await DPosts.findById(postId);
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -262,7 +266,7 @@ const commentOnPost = async (req, res, next) => {
     res.status(200).json({ message: 'Comment added successfully', comment: newComment });
   } catch (error) {
     console.error('Error commenting on post:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ error,message: 'Internal server error' });
   }
 };
 const reactOnComment = async (req, res, next) => {
@@ -293,7 +297,12 @@ const reactOnComment = async (req, res, next) => {
 
 const getAllSubjects = async (req, res, next) => {
   try {
-    const subjects = await Subject.find({});
+    const {acadmicYear} = req.params;
+    const subjects = await Subject.find({academicYear:acadmicYear});
+    console.log("🚀 ~ getAllSubjects ~ subjects:", subjects)
+    
+    if(!subjects[0])
+    { return res.status(404).json({ message:"error wrong acadmic year" });}
     res.status(200).json({ subjects });
   } catch (error) {
     console.error('Error fetching all subjects:', error);
@@ -302,43 +311,82 @@ const getAllSubjects = async (req, res, next) => {
 };
 
 const registerSubjectByName = async (req, res, next) => {
-  const { subjectName } = req.body; // Assuming subjectName is provided
+  const { subjectName,studentMail } = req.body; 
   try {
     const existingSubject = await Subject.findOne({ subjectName });
-    if (existingSubject) {
-      return res.status(400).json({ message: 'Subject already registered' });
+    if (!existingSubject) {
+      return res.status(404).json({ message: 'error wrong subject name' });
     }
-    const newSubject = new Subject({ subjectName });
-    await newSubject.save();
-    res.status(200).json({ message: 'Subject registered successfully', subject: newSubject });
+    const existingStudent = await Student.findOne({ studentMail:studentMail });
+    if (!existingStudent) {
+      return res.status(404).json({ message: 'error wrong Student mail' });
+    }
+    const temp = existingStudent.studentSubjects;
+    const result = await temp.filter(item => subjectName===item );
+    console.log("🚀 ~ registerSubjectByName ~ result:", result)
+    
+    if(result[0])
+    {
+      return res.status(402).json({ message: 'this subject is aleardy registerd ' })
+    }
+    existingStudent.studentSubjects.push(subjectName);
+    await existingStudent.save();
+   
+    res.status(200).json({ message: 'Subject registered successfully', existingStudent });
   } catch (error) {
     console.error('Error registering subject:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ error,message: 'Internal server error' });
   }
 };
 
 const getSubjectsByStudent = async (req, res, next) => {
-  const { studentMail } = req.body; 
+  const { studentMail } = req.params; 
   try {
-    const subjects = await Subject.find({ studentMail });
-    res.status(200).json({ subjects });
+    const existingStudent = await Student.findOne({ studentMail });
+    if(!existingStudent)
+      { return res.status(404).json({ message:"error wrong student mail" });}
+      const temp = existingStudent.studentSubjects;
+      
+      const registeredSubjects = await Subject.find({ subjectName: { $in: temp } });
+      console.log("🚀 ~ getSubjectsByStudent ~ registeredSubject:", registeredSubjects)
+
+    res.status(200).json({ registeredSubjects   });
   } catch (error) {
     console.error('Error fetching subjects by student:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+const getMatrialByStudent = async (req, res, next) => {
+  const { studentMail } = req.params; 
+  try {
+    const existingStudent = await Student.findOne({ studentMail });
+    if(!existingStudent)
+      { return res.status(404).json({ message:"error wrong student mail" });}
+      const temp = existingStudent.studentSubjects;
+      
+      const registeredMatrial = await Matrial.find({ subjectNameM: { $in: temp } });
+      console.log("🚀 ~ getSubjectsByStudent ~ registeredSubject:", registeredMatrial)
+
+    res.status(200).json({ registeredMatrial   });
+  } catch (error) {
+    console.error('Error fetching subjects by student:', error);
+    res.status(500).json({ error,message: 'Internal server error' });
+  }
+};
+
 module.exports = {
    StudentSignIn,
    StudentSignup,
   // StudentUpdateInfo,
   //  UpdatePassword,
   //  deleteAccount,
-  getPostsBySubjects,
+  getPostsBySubject,
   reactOnPost,
   commentOnPost,
   reactOnComment,
   getAllSubjects,
   registerSubjectByName,
   getSubjectsByStudent,
+  getMatrialByStudent
   // upload: upload,
 };

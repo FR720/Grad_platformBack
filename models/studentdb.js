@@ -40,10 +40,10 @@ const StudentSchema = new mongoose.Schema({
     max: 4,
   },
   studentSubjects: {
-    type: Array,
-    ref: "Data", 
-    required: false,
-  },
+    type: [String], 
+    required: false, 
+    default: []
+  }
 
 }, {
   timestamps: true 
